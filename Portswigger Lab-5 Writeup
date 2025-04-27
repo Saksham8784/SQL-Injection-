@@ -1,0 +1,37 @@
+Lab: SQL injection UNION attack, retrieving data from other tables
+In the earlier labs of Union based attacks we have learned about how to know the number of columns and columns which contain the text.
+🎯 Goal:
+ Now in the lab by using the information of previous UNION SELECT labs we have to get information from users table and column username and password to login as administrator to  solve the lab.
+🧪 Steps:
+Access the Lab – Select any category like Accessories, capture the request using Burp Suite Proxy, and send it to Repeater.
+
+
+Find the Number of Columns:
+
+
+Modify the request to use ORDER BY:
+GET /filter?category=Accessories' ORDER BY 2--
+If HTTP 200 OK is received, it means 2 columns are present.
+If not, adjust the number (e.g., try ORDER BY 3).
+
+
+Find Columns That Contain Text:
+
+
+Now, use UNION SELECT with placeholders:
+GET /filter?category=Accessories' UNION SELECT 'abc', 'def'--
+If HTTP 200 OK is received, both columns accept text values.
+
+
+Extract Data from users Table:
+Replace placeholder strings with actual column names you want to retrieve(username and password):
+GET /filter?category=Accessories' UNION SELECT username, password FROM users--
+View the Response:
+The usernames and passwords will either show:
+In the Burp Response window. or
+Directly on the website, 
+Login as Administrator:
+Go to the My Account section.
+Use the administrator username and corresponding password you found.
+Login successfully!
+💥 Boom! Lab solved!
