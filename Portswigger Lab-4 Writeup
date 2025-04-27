@@ -1,0 +1,45 @@
+LAB-SQL injection UNION attack, finding a column containing text
+🎯 Goal:
+Retrieve the data type (specifically, find a column that accepts text) from the database table.
+🧪 Steps:
+Access the Lab – Select any category like Accessories and capture the request using Burp Suite Proxy.
+
+
+ In the request:
+GET /filter?category=Accessories HTTP/2
+First, find the number of columns using either:
+ORDER BY method, or
+UNION SELECT NULL-- method (keep adding NULLs until you get HTTP/2 200 OK).
+Once the number of columns is known, construct a UNION SELECT payload to find which column accepts text.
+
+ Example starting payload:
+Accessories' UNION SELECT 'abc', NULL, NULL, NULL--
+
+Place the string 'abc' in different positions (replacing different NULLs) one by one.
+
+
+Send the request after each move.
+
+
+Watch the response:
+
+
+When you get HTTP/2 200 OK with the string visible or no server error, you have found the column that accepts text!
+Now, replace the test string 'abc' with the string provided by the lab (for me, it is 'HgThSk').
+
+ Example:
+Accessories' UNION SELECT 'HgThSk', NULL, NULL, NULL--  (replace the next NULL)
+When the lab-specific string is correctly placed, and you get HTTP/2 200 OK:
+
+
+Right-click in Burp → Show response in browser.
+
+
+Copy and paste the URL in your browser.
+
+
+💥 Boom! Lab solved!
+     🧠 Why This Works:
+We are identifying which column can hold a text/string.
+Databases are strict about data types: if you try to insert text into a number-only column, you get an error.
+By moving the text string across NULLs, we find the text-compatible column.
