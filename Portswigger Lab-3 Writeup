@@ -1,0 +1,36 @@
+✅ Lab: SQL injection UNION attack, determining the number of columns returned by the query
+🧪 Steps:
+Access the Lab – Open the lab and make sure Burp Suite is set up to intercept traffic.
+Go to any category, for example, Accessories.
+In Burp, capture the request for Accessories.
+ Send the captured request to the Repeater.
+ Example request:
+GET /filter?category=Accessories HTTP/2
+Now, inject a payload to find the number of columns by modifying the category parameter.
+ Start with:
+Accessories' UNION SELECT NULL--
+ cpp
+CopyEdit
+Accessories' UNION SELECT NULL--
+Send the request. If you get an Internal Server Error, it means the number of columns doesn't match yet.
+Increment the number of NULLs:
+ Accessories' UNION SELECT NULL, NULL--
+ Accessories' UNION SELECT NULL, NULL, NULL--
+ Accessories' UNION SELECT NULL, NULL, NULL, NULL--
+Repeat until you get an HTTP 200 OK response and a normal page (no server error).
+
+
+The number of NULLs you needed is the number of columns returned by the original query.
+
+
+✨ Pro Tip:
+You can also inject the payload directly in the URL from the browser, after selecting any category.
+Example:
+https://your-lab-id.web-security-academy.net/filter?category=Accessories' UNION SELECT NULL,NULL--
+
+🧠 Why This Works:
+UNION combines the results of two queries.
+The number of columns and their data types must match in both queries.
+Adding the correct number of NULLs satisfies the database's structure, avoiding errors.
+
+
