@@ -1,0 +1,48 @@
+
+Combined LAB(7,8)-SQL injection attack, querying the database type and version on Oracle,MySQL and Microsoft
+🎯Goal-To find database type and version of Oracle,MySQL and Microsoft.
+
+🧪 Steps:
+Access the Lab:
+Open the lab in your browser.
+Use Burp Suite to intercept the request when selecting any product category (e.g., Gifts).
+Send the intercepted request to the Repeater tab for manipulation.
+
+
+Determine the Number of Columns and Identify Text-Compatible Columns:
+Modify the category parameter to test the number of columns:
+GET /filter?category=Gifts' ORDER BY 2-- HTTP/2
+If the response is HTTP 200 OK, it indicates that the query is valid with two columns.
+To identify which columns accept text, use:
+GET /filter?category=Gifts' UNION SELECT 'a', NULL-- HTTP/2
+If this returns HTTP 200 OK, the first column accepts text. Adjust accordingly to find all text-compatible columns.
+Craft Payloads to Retrieve Database Version Information:
+
+
+Depending on the database type, use the following payloads:
+For MySQL and Microsoft SQL Server:
+These databases support the @@version global variable to retrieve version information.
+GET /filter?category=Gifts' UNION SELECT @@version, NULL-- HTTP/2
+This will display the database version string in the application's response.
+For Oracle:
+Oracle requires selecting from the v$version table and mandates the use of the FROM clause.
+GET /filter?category=Gifts' UNION SELECT banner, NULL FROM v$version-- HTTP/2
+This will return multiple rows containing version details.
+
+
+Note: Ensure that the number of columns and their data types in your UNION SELECT statement match the original query. Adjust the NULL values and text positions as necessary based on your earlier findings.
+
+
+Analyze the Response:
+After sending the appropriate payload, review the application's response.
+The database version information should be displayed, confirming the successful execution of the SQL injection.
+
+
+🧠 Why This Works:
+UNION-based SQL injection allows an attacker to append additional SELECT queries to the original query.
+
+
+By aligning the number of columns and data types, the injected query can retrieve data from system tables or variables.
+
+
+Understanding the specific syntax and system tables/variables of each database system is crucial for crafting effective payloads.
