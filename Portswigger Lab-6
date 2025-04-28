@@ -1,0 +1,48 @@
+Lab: SQL injection UNION attack, retrieving multiple values in a single column
+🎯 Goal:
+Perform a UNION SQL injection to retrieve multiple values (like username and password) in a single column from the database.
+🧪 Steps:
+Access the Lab:
+Open the lab.
+Use Burp Suite to capture the request when selecting any category (for example, Gifts).
+Send the captured request to the Repeater.
+Find the Number of Columns and a Text-Compatible Column:
+First, find the number of columns using ORDER BY or UNION SELECT NULL methods.
+Then find which column accepts text.
+In repeater-
+GET /filter?category=Accessories' UNION SELECT NULL, 'a'--
+If you get an HTTP 200 OK response, it confirms that:
+There are 2 columns.
+The second column accepts text values.
+Construct the UNION Payload to Retrieve Data:
+Now we want to combine two fields (username and password) into a single text output.
+Use the SQL string concatenation operator (||) to combine them:
+You can first check which database is used and then you can construct the payload accordingly for retrieving multiple values in a single column.
+GET /filter?category=Accessories' UNION SELECT NULL, username||'~'||password FROM users--
+Here:
+
+
+username||'~'||password joins the username and password together separated by a ~.
+|| is the string concatenation operator in PostgreSQL (some databases use CONCAT() instead if || doesn't work so check first the database).
+View the Response:
+Right-click in Burp Repeater → Show Response in Browser.
+
+
+Copy and paste the URL into your browser.
+
+
+You'll see usernames and passwords combined like:
+carlos~kspjyp1c532tfuc8y1kp
+administrator~evrq1pkrjdmxeigdlvwl
+wiener~99b2c94banvpmnmi6xmw
+
+Login as Administrator:
+Go to the My Account section.
+Login using the administrator username and its corresponding password.
+💥 Boom! Lab solved!
+
+
+🧠 Why This Works:
+Normally, each column can only return one field.
+To retrieve both username and password together in one column, we concatenate them using ||.
+This tricks the SQL output to return two different fields combined into a single visible column.
